@@ -25,3 +25,5 @@ This install does the following:
 ## Final Manual Steps
 
 - Contact Eric or Tyler to get the .env.local files for both storyflow-server and storyflow-creator
+- Talk to Andrew to get an AWS account created
+- Create an Alexa account
