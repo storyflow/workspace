@@ -33,3 +33,25 @@ This install does the following:
 # Notes
 This process can be tested by creating a MacOS VM in VirtualBox: https://github.com/geerlingguy/macos-virtualbox-vm
 
+# Commits and Versioning
+
+In order to provide an accurate changelog as we fix bugs and deploy features, we apply a linter to commit messages. [commitlint](https://commitlint.js.org/#/) applies a bunch of rules to ensure that commit messages can be rolled up into a release and changelog. 
+
+In general the pattern mostly looks like this:
+```sh
+type(scope?): subject  #scope is optional
+```
+Real world examples can look like this:
+```
+chore: run tests on travis ci
+```
+```
+fix(server): send cors headers
+```
+```
+feat(blog): add comment section
+```
+
+If you are unsure about the format, you can run `npm run commit` and it'll run you through an interactive commit builder.
+
+Pull requests to `master` and `production` branches must have at least one commit that follows this convention, or a PR title that does in order to be mergable.
