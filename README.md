@@ -31,7 +31,7 @@ This install does the following:
 
 
 # Notes
-This process can be tested by creating a MacOS VM in VirtualBox: https://github.com/geerlingguy/macos-virtualbox-vm
+This process can be tested by creating a MacOS VM in VirtualBox: https://github.com/AlexanderWillner/runMacOSinVirtualBox
 
 # Commits and Versioning
 
