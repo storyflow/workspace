@@ -19,6 +19,9 @@
     "fixpack": "^2.3.1",
     "husky": "^2.2.0"
   },
+  "files": [
+    "setup.sh"
+  ],
   "homepage": "https://github.com/storyflow/workspace#readme",
   "husky": {
     "hooks": {
@@ -26,9 +29,6 @@
       "pre-commit": "fixpack"
     }
   },
-  "files": [
-    "setup.sh"
-  ],
   "keywords": [
     "workspace"
   ],
