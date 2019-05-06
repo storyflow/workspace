@@ -1,0 +1,16 @@
+jobs:
+  release:
+    docker:
+      - image: node:11
+    steps:
+      - checkout
+      - run: npm i
+      - run: npx semantic-release
+workflows:
+  version: 2
+  test-and-build:
+    jobs:
+      - release:
+          filters:
+            branches:
+              only: master
