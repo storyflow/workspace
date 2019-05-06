@@ -26,6 +26,9 @@
       "pre-commit": "fixpack"
     }
   },
+  "files": [
+    "setup.sh"
+  ],
   "keywords": [
     "workspace"
   ],

@@ -57,6 +57,5 @@ If you are unsure about the format, you can run `npm run commit` and it'll run y
 
 Pull requests to `master` and `production` branches must have at least one commit that follows this convention, or a PR title that does in order to be mergable.
 
-
 ## Testing
 This process can be tested by creating a MacOS VM in VirtualBox: https://github.com/AlexanderWillner/runMacOSinVirtualBox
