@@ -23,7 +23,7 @@ else
     brew cleanup
 fi
 
-brew install git bash-completion vim jq wget
+brew install git bash-completion vim jq wget postgresql
 brew tap caskroom/cask
 brew cask install docker
 brew cask install iterm2
@@ -38,7 +38,22 @@ git config --global alias.pr 'pull --rebase'
 git config --global alias.rb 'rebase --interactive'
 git config --global alias.can 'commit --amend --no-edit'
 
+
+echo ".idea" >> ~/.gitignore
+echo ".DS_STORE" >> ~/.gitignore
+echo "scratch.*" >> ~/.gitignore
+
 echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion" >> ~/.bash_profile
+
+AWS_CREDS=~/.aws/credentials
+
+if [[ -f "$AWS_CREDS" ]]; then
+    echo "$AWS_CREDS exists"
+else
+    echo "[default]
+aws_access_key_id=AKIAIOSFODNN7EXAMPLE
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" > AWS_CREDS
+fi
 
 echo ""
 echo ""
@@ -69,6 +84,7 @@ echo ""
 
 echo "alias ll='ls -alFh'" >> ~/.bash_profile
 echo "alias v='cd ~/workspace/voiceflow'" >> ~/.bash_profile
+echo "NODE_ENV=local" >> ~/.bash_profile
 
 (cd /tmp && git clone --depth 1 --config core.autocrlf=false https://github.com/twolfson/sexy-bash-prompt && cd sexy-bash-prompt && make install) && source ~/.bashrc
 
@@ -109,11 +125,11 @@ echo ""
 echo ""
 
 echo "Shortcuts:"
-echo "- git st === git status"
-echo "- git co === git checkout"
+echo "- 'git st' is an alias for 'git status'"
+echo "- 'git co' is an alias for 'git checkout'"
 echo "- Take a look at ~/.gitconfig for some other git aliases or create your own"
-echo "- in bash 'v' is an alias for cd ~/workspace/voiceflow"
-echo "- in bash 'll' is an alias for ls -alFh"
+echo "- 'v' is an alias for 'cd ~/workspace/voiceflow'"
+echo "- 'll' is an alias for 'ls -alFh'"
 
 echo "Remaining manual steps:"
 echo "- Launch Docker from applications to let it complete it's installation"
