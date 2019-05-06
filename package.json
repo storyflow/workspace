@@ -1,7 +1,7 @@
 {
   "name": "@voiceflow/workspace",
   "description": "Developer setup",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Voiceflow",
   "bugs": {
     "url": "https://github.com/storyflow/workspace/issues"
