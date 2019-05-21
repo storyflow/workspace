@@ -52,7 +52,7 @@ if [[ -f "$AWS_CREDS" ]]; then
 else
     echo "[default]
 aws_access_key_id=AKIAIOSFODNN7EXAMPLE
-aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" > AWS_CREDS
+aws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY" > ${AWS_CREDS}
 fi
 
 echo ""
@@ -72,7 +72,7 @@ nvm install ${NODE_VERSION}
 nvm use ${NODE_VERSION}
 nvm alias default ${NODE_VERSION}
 
-npm install -g npm-check mocha npm
+npm install -g npm-check mocha npm yarn
 
 echo ""
 echo ""
