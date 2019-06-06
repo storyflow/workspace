@@ -13,6 +13,8 @@ def main():
 
     preinstall_check(people)
     usr_shell = get_shell()
+    install_shell_utils = query_yes_no('Would you like to install shell appearance optimizations?', default='yes')
+    workspace_path = get_workspace_dir()
     install_chrome = query_yes_no('Would you like Google Chrome installed?', default='yes')
     install_iterm2 = query_yes_no('Would you like iTerm2 installed?', default='yes')
     configure_aws_user()
@@ -32,9 +34,9 @@ def main():
     install_casks(casks)
 
     install_tools(['git', 'vim', 'bash-completion', 'docker-completion', 'jq', 'wget', 'libpq', 'awscli', 'nvm'], shell=usr_shell)
-    configure_shell(usr_shell)
+    configure_shell(usr_shell, install_shell_utils)
     configure_git()
-    clone_repositories(['storyflow-creator', 'storyflow-server', 'database'])
+    clone_repositories(['storyflow-creator', 'storyflow-server', 'database'], workspace_path)
     post_install(usr_shell)
 
 def post_install(usr_shell):
@@ -58,6 +60,16 @@ def post_install(usr_shell):
     print('\n\n')
     print('You are all set to go!')
     
+def get_workspace_dir(default_dir='~/workspace/voiceflow'):
+    dir_valid = False
+    while not dir_valid:
+        path = input('Where would you like your workspace to be? ['+default_dir+']: ')
+        if path == '':
+            path = default_dir
+        if subprocess.run(['mkdir', '-p', os.path.expanduser(path)]).returncode != 0:
+            print('I cannot put your workspace there. Please enter another path!')
+        else: 
+            return path
 
 def preinstall_check(personale_dict):
     print('Welcome to Voiceflow! I am going to set up your computer for development.')
@@ -115,18 +127,19 @@ def configure_aws_user():
         f.write('aws_secret_access_key = ' + sak + '\n')
     print('\n\nDone: Configure AWS '.ljust(60,'<'))
 
-def configure_shell(shell='bash'):
+def configure_shell(shell='bash', install_optimizations=True):
     print('\n\nStart: Configure shell '.ljust(62,'>'))
     if shell == 'bash':
         shell_profile = '~/.bash_profile'
         print('Installing bash_completion scripts')
         bash_completion_line = '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion\n'
         insert_line(os.path.expanduser('~/.bash_profile'), bash_completion_line)
-        print('Installing sexy-bash-prompt')
-        subprocess.run(['rm', '-rf', '/tmp/sexy-bash-prompt'])
-        subprocess.run(['mkdir', '/tmp/sexy-bash-prompt'])
-        subprocess.run(['git','clone','--depth','1','--config','core.autocrlf=false','https://github.com/twolfson/sexy-bash-prompt', '/tmp/sexy-bash-prompt'])
-        subprocess.run(['make', '-C', '/tmp/sexy-bash-prompt', 'install'])
+        if install_optimizations:
+            print('Installing sexy-bash-prompt')
+            subprocess.run(['rm', '-rf', '/tmp/sexy-bash-prompt'])
+            subprocess.run(['mkdir', '/tmp/sexy-bash-prompt'])
+            subprocess.run(['git','clone','--depth','1','--config','core.autocrlf=false','https://github.com/twolfson/sexy-bash-prompt', '/tmp/sexy-bash-prompt'])
+            subprocess.run(['make', '-C', '/tmp/sexy-bash-prompt', 'install'])
     else: 
         shell_profile = '~/.zshrc'
         subprocess.run(['touch', os.path.expanduser(shell_profile)])
@@ -134,21 +147,22 @@ def configure_shell(shell='bash'):
         insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
         insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
         insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
-        subprocess.run(['curl','-Lo','/tmp/install.sh','https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh'])
-        subprocess.run(['sh', '/tmp/install.sh', '--unattended'])
-        subprocess.run(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
+        if install_optimizations:
+            print('Installing oh-my-zsh')
+            subprocess.run(['curl','-Lo','/tmp/install.sh','https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh'])
+            subprocess.run(['sh', '/tmp/install.sh', '--unattended'])
+            subprocess.run(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
     
     insert_line(os.path.expanduser(shell_profile),'# Voiceflow environments')
     insert_line(os.path.expanduser(shell_profile),'NODE_ENV=local')
     print('\n\nDone: Configure shell '.ljust(60,'<'))
 
-def clone_repositories(repo_list):
+def clone_repositories(repo_list, workspace_dir='~/workspace/voiceflow'):
     print('\n\nStart: Clone repositories '.ljust(62,'>'))
-    workspace_prefix = '~/workspace/voiceflow/'
-    subprocess.run(['mkdir', '-p', os.path.expanduser(workspace_prefix)])
+    subprocess.run(['mkdir', '-p', os.path.expanduser(workspace_dir)])
     for repo in repo_list:
-        if not os.path.isdir(os.path.expanduser(workspace_prefix + repo)):
-            repo_path = os.path.join(os.path.expanduser(workspace_prefix), repo)
+        repo_path = os.path.join(os.path.expanduser(workspace_dir), repo)
+        if not os.path.isdir(repo_path):
             subprocess.run(['mkdir', '-p', repo_path])
             subprocess.run(['git', 'clone', 'git@github.com:storyflow/'+repo+'.git',repo_path])
         else: 
