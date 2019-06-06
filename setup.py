@@ -1,20 +1,159 @@
 #!/usr/local/bin/python3
-import sys
+from copy import deepcopy
 import os
 import subprocess
-from copy import deepcopy
+import sys
+import time
 
 def main():
-    print('Welcome to Voiceflow! I am going to set up your computer for development.')
+    people = {
+        'sol_arch': 'Frank Gu <frank@voiceflow.com>',
+        'eng_lead': 'Eric Hacke <eric@voiceflow.com>'
+    }
+
+    preinstall_check(people)
     usr_shell = get_shell()
-    print("Installing for %s" % (usr_shell))
-    # install_iterm = query_yes_no('Would you like me to install iTerm2?', default='yes')
-    # install_pip3()
-    # install_homebrew()
-    install_tools(['git', 'vim', 'bash-completion', 'jq', 'wget', 'libpq'], shell=usr_shell)
-    # install_casks(['docker', 'iterm2'])
-    # install_tools(['docker-completion'])
+    install_chrome = query_yes_no('Would you like Google Chrome installed?', default='yes')
+    install_iterm2 = query_yes_no('Would you like iTerm2 installed?', default='yes')
+    configure_aws_user()
+    print('Automated install step begins. I will need a few minutes, so go grab a coffee ' + u'\u2615'+'!')
+
+    install_pip3()
+    install_homebrew()
+
+    casks = ['docker']
+    if install_chrome:
+        if os.path.isdir('/Applications/Google Chrome.app'):
+            print('You seem to have Google Chrome already installed, so I will not install it again!')
+        else:
+            casks.append('google-chrome')
+    if(install_iterm2):
+        casks.append('iterm2')
+    install_casks(casks)
+
+    install_tools(['git', 'vim', 'bash-completion', 'docker-completion', 'jq', 'wget', 'libpq', 'awscli', 'nvm'], shell=usr_shell)
+    configure_shell(usr_shell)
     configure_git()
+    clone_repositories(['storyflow-creator', 'storyflow-server', 'database'])
+    post_install(usr_shell)
+
+def post_install(usr_shell):
+    print('\n\nStart: Post install operations '.ljust(62,'>'))
+    print("Installing Docker cleanup crontab")
+    with open('/tmp/crontab.user', 'w+') as f:
+        subprocess.run(['crontab','-l'], stdout=f)
+    insert_line('/tmp/crontab.user', '15 23 * * * /usr/local/bin/docker system prune -f')
+    subprocess.run(['crontab', '/tmp/crontab.user'])
+
+    print('Login to NPM')
+    subprocess.run(['npm', 'login'])
+    print('Done: Post install operations '.ljust(60,'<'))
+
+    if usr_shell == 'zsh':
+        print('\n\n')
+        print('Remember to set your default shell as zsh:')
+        print('    $ sudo sh -c "echo $(which zsh) >> /etc/shells"')
+        print('    $ chsh -s $(which zsh)')
+
+    print('\n\n')
+    print('You are all set to go!')
+    
+
+def preinstall_check(personale_dict):
+    print('Welcome to Voiceflow! I am going to set up your computer for development.')
+    print('Before we begin, I will make sure you have all the information ready!\n\n')
+    
+    # Check AWS access
+    if not query_yes_no('Did you receive AWS credentials?'):
+        print('Please speak to %s' % (personale_dict['sol_arch']))
+        if not query_yes_no('Continue?'):
+            exit(0)
+
+    # Check GitHub setup
+    if not query_yes_no('Is your GitHub set up with 2FA and SSH key?'):
+        subprocess.run(['open', '-a', 'Safari', 'https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account'])
+        print('If you have any questions, please speak to %s' % (personale_dict['sol_arch']))
+        if not query_yes_no('Continue?'):
+            exit(0)
+
+    # Check GitHub access
+    if not query_yes_no('Did you receive GitHub access?'):
+        print('Please speak to %s' % (personale_dict['eng_lead']))
+        if not query_yes_no('Continue?'):
+            exit(0)
+    
+    # Check NPM access
+    if not query_yes_no('Did you receive NPM access?'):
+        print('Please create an NPM account')
+        print('Then speak to %s' % (personale_dict['eng_lead']))
+        time.sleep(2)
+        subprocess.run(['open', '-a', 'Safari', 'https://www.npmjs.com/signup'])
+        if not query_yes_no('Continue?'):
+            exit(0)
+
+def configure_aws_user():
+    print('\n\nStart: Configure AWS '.ljust(62,'>'))
+    aws_credential_path = '~/.aws/credentials'
+    aws_config_path = '~/.aws/config'
+    
+    # Write new aws config
+    with open(os.path.expanduser(aws_config_path), 'w+') as f:
+        f.write('[default]\n')
+        f.write('region = us-east-1\n')
+        f.write('output = json\n')
+
+    if os.path.isfile(os.path.expanduser(aws_credential_path)) and \
+        not query_yes_no('I found existing AWS credentials. Overwrite?', default='no'):
+        # User doesn't want to overwrite existing credentials
+        return
+    
+    # Write new credentials
+    aki = input('Aceess Key ID: ')
+    sak = input('Secret Access Key: ')
+    with open(aws_credential_path, 'w+') as f:
+        f.write('aws_access_key_id = ' + aki + '\n')
+        f.write('aws_secret_access_key = ' + sak + '\n')
+    print('\n\nDone: Configure AWS '.ljust(60,'<'))
+
+def configure_shell(shell='bash'):
+    print('\n\nStart: Configure shell '.ljust(62,'>'))
+    if shell == 'bash':
+        shell_profile = '~/.bash_profile'
+        print('Installing bash_completion scripts')
+        bash_completion_line = '[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion\n'
+        insert_line(os.path.expanduser('~/.bash_profile'), bash_completion_line)
+        print('Installing sexy-bash-prompt')
+        subprocess.run(['rm', '-rf', '/tmp/sexy-bash-prompt'])
+        subprocess.run(['mkdir', '/tmp/sexy-bash-prompt'])
+        subprocess.run(['git','clone','--depth','1','--config','core.autocrlf=false','https://github.com/twolfson/sexy-bash-prompt', '/tmp/sexy-bash-prompt'])
+        subprocess.run(['make', '-C', '/tmp/sexy-bash-prompt', 'install'])
+    else: 
+        shell_profile = '~/.zshrc'
+        subprocess.run(['touch', os.path.expanduser(shell_profile)])
+        insert_line(os.path.expanduser(shell_profile), '# NVM')
+        insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
+        insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
+        insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
+        subprocess.run(['curl','-Lo','/tmp/install.sh','https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh'])
+        subprocess.run(['sh', '/tmp/install.sh', '--unattended'])
+        subprocess.run(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
+    
+    insert_line(os.path.expanduser(shell_profile),'# Voiceflow environments')
+    insert_line(os.path.expanduser(shell_profile),'NODE_ENV=local')
+    print('\n\nDone: Configure shell '.ljust(60,'<'))
+
+def clone_repositories(repo_list):
+    print('\n\nStart: Clone repositories '.ljust(62,'>'))
+    workspace_prefix = '~/workspace/voiceflow/'
+    subprocess.run(['mkdir', '-p', os.path.expanduser(workspace_prefix)])
+    for repo in repo_list:
+        if not os.path.isdir(os.path.expanduser(workspace_prefix + repo)):
+            repo_path = os.path.join(os.path.expanduser(workspace_prefix), repo)
+            subprocess.run(['mkdir', '-p', repo_path])
+            subprocess.run(['git', 'clone', 'git@github.com:storyflow/'+repo+'.git',repo_path])
+        else: 
+            print(repo + ' is already cloned. Remember to pull!')
+    print('Done: Clone repositories '.ljust(60,'<'))
 
 def get_shell():
     ans = True
@@ -27,11 +166,15 @@ def get_shell():
 
         ans=input(prompt)
         if ans == '1':
-            return 'bash'
+            usr_shell = 'bash'
+            break
         elif ans == '2':
-            return 'zsh'
+            usr_shell = 'zsh'
+            break
         else:
             print('Please select your shell from the menu!')
+    print("Installing for %s" % (usr_shell))
+    return usr_shell
 
 def install_pip3():
     print('\n\nStart: Install pip3 '.ljust(62,'>'))
@@ -44,7 +187,7 @@ def install_pip3():
     print('Done: Install pip3 '.ljust(60,'<'))
 
 def install_homebrew():
-    print('\n\nComponent: Homebrew '.ljust(62,'>'))
+    print('\n\nStart: Install Homebrew '.ljust(62,'>'))
     if subprocess.run(['which', 'brew']).returncode == 0:
         print('Homebrew already installed; upgrading...')
         subprocess.run(['brew', 'update'])
@@ -58,14 +201,24 @@ def install_homebrew():
         if retCode != 0:
             print("Homebrew install failed!!")
             exit(retCode)
-    print('Done: Homebrew '.ljust(60,'<'))
+    print('Done: Install Homebrew '.ljust(60,'<'))
+
+def install_node(version='11'):
+    print('\n\nStart: Install node '.ljust(62,'>'))
+    subprocess.run(['nvm', 'install', version])
+    subprocess.run(['nvm', 'use', version])
+    subprocess.run(['nvm', 'alias', 'default', version])
+    subprocess.run(['npm', 'install', '-g', 'npm-check','mocha','npm','yarn'])
+    print('Done: Install node '.ljust(60,'<'))
 
 def brew_install_list(bin_list, mode='tap'):
     if mode == 'cask':
         brew_cmd = ['brew', 'cask']
     else: 
         brew_cmd = ['brew']
-    brew_args = deepcopy(brew_cmd).append('install')
+    brew_args = deepcopy(brew_cmd)
+    brew_args.append('install')
+    
     install_needed = False
     for tool in bin_list:
         check_cmd = deepcopy(brew_cmd)
@@ -85,10 +238,15 @@ def install_tools(tools_list, shell='bash'):
 
     # Add libpq binaries to PATH
     libpq_path = 'export PATH="/usr/local/opt/libpq/bin:$PATH"'
-    if shell == 'bash':
-        insert_line(os.path.expanduser('~/.bash_profile'), libpq_path)
-    elif shell == 'zsh':
-        insert_line(os.path.expanduser('~/.zshrc'), libpq_path)
+
+    if shell == 'zsh':
+        brew_install_list(['zsh'], mode='tap')
+        shell_path = '~/.zshrc'
+    else:
+        shell_path = '~/.bash_profile'
+        
+    insert_line(os.path.expanduser(shell_path), '# Postgres utilities')
+    insert_line(os.path.expanduser(shell_path), libpq_path)
     print('Done: Install tools '.ljust(60,'<'))
 
 def install_casks(cask_list):
@@ -151,8 +309,17 @@ def insert_line(file_path, line):
     if os.path.isfile(file_path):
         with open(file_path, 'r') as rof:
             existingLines = [line.rstrip('\n') for line in rof.readlines()]
-        
+
+    add_newline = False
+    with open(file_path, 'rb+') as f:
+        f.seek(-1,2)
+        lastChar = f.read()
+        if lastChar != b'\n':
+            add_newline = True
+
     with open(file_path, 'a+') as af:
+        if add_newline:
+            af.write('\n')
         if line not in existingLines:
             af.write(line + '\n')
 
