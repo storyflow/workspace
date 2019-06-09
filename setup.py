@@ -18,10 +18,10 @@ def main():
     install_chrome = query_yes_no('Would you like Google Chrome installed?', default='yes')
     install_iterm2 = query_yes_no('Would you like iTerm2 installed?', default='yes')
     configure_aws_user()
-    print('Automated install step begins. I will need a few minutes, so go grab a coffee ' + u'\u2615'+'!')
 
-    install_pip3()
+    install_pip()
     install_homebrew()
+    print('Automated install step begins. I will need a few minutes, so go grab a coffee ' + u'\u2615'+'!')
 
     casks = ['docker']
     if install_chrome:
@@ -188,17 +188,19 @@ def get_shell():
             break
         else:
             print('Please select your shell from the menu!')
+            ans = True
     print("Installing for %s" % (usr_shell))
     return usr_shell
 
 def install_pip():
     print('\n\nStart: Install pip '.ljust(62,'>'))
 
-    if subprocess.call(['which', 'pip3']) == 0:
+    if subprocess.call(['which', 'pip']) == 0:
         print('Pip is installed for your Python!')
     else:
-        subprocess.call(['curl', 'https://bootstrap.pypa.io/get-pip.py', '-o', '/tmp/get-pip.py'])
-        subprocess.call(['python', '/tmp/get-pip.py'])
+        # subprocess.call(['curl', 'https://bootstrap.pypa.io/get-pip.py', '-o', '/tmp/get-pip.py'])
+        # subprocess.call(['python', '/tmp/get-pip.py', '--user'])
+        subprocess.call(['sudo', 'easy_install', 'pip'])
     print('Done: Install pip '.ljust(60,'<'))
 
 def install_homebrew():
@@ -212,7 +214,8 @@ def install_homebrew():
         print('Installing CLT for Xcode...')
         subprocess.call(['xcode-select', '--install'])
         print('Installing Homebrew...')
-        retCode = subprocess.call(['/usr/bin/ruby','e','"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
+        subprocess.call(['curl', 'https://raw.githubusercontent.com/Homebrew/install/master/install', '-o', '/tmp/install_homebrew.rb'])
+        retCode = subprocess.call(['/usr/bin/ruby','/tmp/install_homebrew.rb'])
         if retCode != 0:
             print("Homebrew install failed!!")
             exit(retCode)
