@@ -123,7 +123,7 @@ def configure_aws_user():
     # Write new credentials
     aki = raw_input('Aceess Key ID: ')
     sak = raw_input('Secret Access Key: ')
-    with open(aws_credential_path, 'w+') as f:
+    with open(os.path.expanduser(aws_credential_path), 'w+') as f:
         f.write('aws_access_key_id = ' + aki + '\n')
         f.write('aws_secret_access_key = ' + sak + '\n')
     print('\n\nDone: Configure AWS '.ljust(60,'<'))
