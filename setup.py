@@ -261,7 +261,7 @@ def install_tools(tools_list, shell='bash'):
         shell_path = '~/.zshrc'
     else:
         shell_path = '~/.bash_profile'
-    subprocess.call(['mkdir', '-p',os.path.expanduser(shell_path)])
+    subprocess.call(['touch', os.path.expanduser(shell_path)])
     brew_install_list(tools_list, mode='tap')
 
     # Add libpq binaries to PATH
