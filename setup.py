@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/usr/bin/python
 from copy import deepcopy
 import os
 import subprocess
@@ -63,7 +63,7 @@ def post_install(usr_shell):
 def get_workspace_dir(default_dir='~/workspace/voiceflow'):
     dir_valid = False
     while not dir_valid:
-        path = input('Where would you like your workspace to be? ['+default_dir+']: ')
+        path = raw_input('Where would you like your workspace to be? ['+default_dir+']: ')
         if path == '':
             path = default_dir
         if subprocess.run(['mkdir', '-p', os.path.expanduser(path)]).returncode != 0:
@@ -82,8 +82,8 @@ def preinstall_check(personale_dict):
             exit(0)
 
     # Check GitHub setup
-    if not query_yes_no('Is your GitHub set up with 2FA and SSH key?'):
-        subprocess.run(['open', '-a', 'Safari', 'https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account'])
+    if not query_yes_no('Is your GitHub set up with 2FA'):
+        subprocess.run(['open', '-a', 'Safari', 'https://help.github.com/en/articles/securing-your-account-with-two-factor-authentication-2fa'])
         print('If you have any questions, please speak to %s' % (personale_dict['sol_arch']))
         if not query_yes_no('Continue?'):
             exit(0)
@@ -107,7 +107,8 @@ def configure_aws_user():
     print('\n\nStart: Configure AWS '.ljust(62,'>'))
     aws_credential_path = '~/.aws/credentials'
     aws_config_path = '~/.aws/config'
-    
+    subprocess.run(['mkdir', '-p', os.path.expanduser('~/.aws')])
+
     # Write new aws config
     with open(os.path.expanduser(aws_config_path), 'w+') as f:
         f.write('[default]\n')
@@ -120,8 +121,8 @@ def configure_aws_user():
         return
     
     # Write new credentials
-    aki = input('Aceess Key ID: ')
-    sak = input('Secret Access Key: ')
+    aki = raw_input('Aceess Key ID: ')
+    sak = raw_input('Secret Access Key: ')
     with open(aws_credential_path, 'w+') as f:
         f.write('aws_access_key_id = ' + aki + '\n')
         f.write('aws_secret_access_key = ' + sak + '\n')
@@ -178,7 +179,7 @@ def get_shell():
         "2.zsh\n"
         "Selection: ")
 
-        ans=input(prompt)
+        ans=raw_input(prompt)
         if ans == '1':
             usr_shell = 'bash'
             break
@@ -305,7 +306,7 @@ def query_yes_no(question, default="yes"):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = input().lower()
+        choice = raw_input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:
