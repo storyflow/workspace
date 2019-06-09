@@ -43,12 +43,12 @@ def post_install(usr_shell):
     print('\n\nStart: Post install operations '.ljust(62,'>'))
     print("Installing Docker cleanup crontab")
     with open('/tmp/crontab.user', 'w+') as f:
-        subprocess.run(['crontab','-l'], stdout=f)
+        subprocess.call(['crontab','-l'], stdout=f)
     insert_line('/tmp/crontab.user', '15 23 * * * /usr/local/bin/docker system prune -f')
-    subprocess.run(['crontab', '/tmp/crontab.user'])
+    subprocess.call(['crontab', '/tmp/crontab.user'])
 
     print('Login to NPM')
-    subprocess.run(['npm', 'login'])
+    subprocess.call(['npm', 'login'])
     print('Done: Post install operations '.ljust(60,'<'))
 
     if usr_shell == 'zsh':
@@ -66,7 +66,7 @@ def get_workspace_dir(default_dir='~/workspace/voiceflow'):
         path = raw_input('Where would you like your workspace to be? ['+default_dir+']: ')
         if path == '':
             path = default_dir
-        if subprocess.run(['mkdir', '-p', os.path.expanduser(path)]).returncode != 0:
+        if subprocess.call(['mkdir', '-p', os.path.expanduser(path)]) != 0:
             print('I cannot put your workspace there. Please enter another path!')
         else: 
             return path
@@ -83,7 +83,7 @@ def preinstall_check(personale_dict):
 
     # Check GitHub setup
     if not query_yes_no('Is your GitHub set up with 2FA'):
-        subprocess.run(['open', '-a', 'Safari', 'https://help.github.com/en/articles/securing-your-account-with-two-factor-authentication-2fa'])
+        subprocess.call(['open', '-a', 'Safari', 'https://help.github.com/en/articles/securing-your-account-with-two-factor-authentication-2fa'])
         print('If you have any questions, please speak to %s' % (personale_dict['sol_arch']))
         if not query_yes_no('Continue?'):
             exit(0)
@@ -99,7 +99,7 @@ def preinstall_check(personale_dict):
         print('Please create an NPM account')
         print('Then speak to %s' % (personale_dict['eng_lead']))
         time.sleep(2)
-        subprocess.run(['open', '-a', 'Safari', 'https://www.npmjs.com/signup'])
+        subprocess.call(['open', '-a', 'Safari', 'https://www.npmjs.com/signup'])
         if not query_yes_no('Continue?'):
             exit(0)
 
@@ -107,7 +107,7 @@ def configure_aws_user():
     print('\n\nStart: Configure AWS '.ljust(62,'>'))
     aws_credential_path = '~/.aws/credentials'
     aws_config_path = '~/.aws/config'
-    subprocess.run(['mkdir', '-p', os.path.expanduser('~/.aws')])
+    subprocess.call(['mkdir', '-p', os.path.expanduser('~/.aws')])
 
     # Write new aws config
     with open(os.path.expanduser(aws_config_path), 'w+') as f:
@@ -137,22 +137,22 @@ def configure_shell(shell='bash', install_optimizations=True):
         insert_line(os.path.expanduser('~/.bash_profile'), bash_completion_line)
         if install_optimizations:
             print('Installing sexy-bash-prompt')
-            subprocess.run(['rm', '-rf', '/tmp/sexy-bash-prompt'])
-            subprocess.run(['mkdir', '/tmp/sexy-bash-prompt'])
-            subprocess.run(['git','clone','--depth','1','--config','core.autocrlf=false','https://github.com/twolfson/sexy-bash-prompt', '/tmp/sexy-bash-prompt'])
-            subprocess.run(['make', '-C', '/tmp/sexy-bash-prompt', 'install'])
+            subprocess.call(['rm', '-rf', '/tmp/sexy-bash-prompt'])
+            subprocess.call(['mkdir', '/tmp/sexy-bash-prompt'])
+            subprocess.call(['git','clone','--depth','1','--config','core.autocrlf=false','https://github.com/twolfson/sexy-bash-prompt', '/tmp/sexy-bash-prompt'])
+            subprocess.call(['make', '-C', '/tmp/sexy-bash-prompt', 'install'])
     else: 
         shell_profile = '~/.zshrc'
-        subprocess.run(['touch', os.path.expanduser(shell_profile)])
+        subprocess.call(['touch', os.path.expanduser(shell_profile)])
         insert_line(os.path.expanduser(shell_profile), '# NVM')
         insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
         insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
         insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
         if install_optimizations:
             print('Installing oh-my-zsh')
-            subprocess.run(['curl','-Lo','/tmp/install.sh','https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh'])
-            subprocess.run(['sh', '/tmp/install.sh', '--unattended'])
-            subprocess.run(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
+            subprocess.call(['curl','-Lo','/tmp/install.sh','https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh'])
+            subprocess.call(['sh', '/tmp/install.sh', '--unattended'])
+            subprocess.call(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
     
     insert_line(os.path.expanduser(shell_profile),'# Voiceflow environments')
     insert_line(os.path.expanduser(shell_profile),'NODE_ENV=local')
@@ -160,12 +160,12 @@ def configure_shell(shell='bash', install_optimizations=True):
 
 def clone_repositories(repo_list, workspace_dir='~/workspace/voiceflow'):
     print('\n\nStart: Clone repositories '.ljust(62,'>'))
-    subprocess.run(['mkdir', '-p', os.path.expanduser(workspace_dir)])
+    subprocess.call(['mkdir', '-p', os.path.expanduser(workspace_dir)])
     for repo in repo_list:
         repo_path = os.path.join(os.path.expanduser(workspace_dir), repo)
         if not os.path.isdir(repo_path):
-            subprocess.run(['mkdir', '-p', repo_path])
-            subprocess.run(['git', 'clone', 'git@github.com:storyflow/'+repo+'.git',repo_path])
+            subprocess.call(['mkdir', '-p', repo_path])
+            subprocess.call(['git', 'clone', 'git@github.com:storyflow/'+repo+'.git',repo_path])
         else: 
             print(repo + ' is already cloned. Remember to pull!')
     print('Done: Clone repositories '.ljust(60,'<'))
@@ -194,25 +194,25 @@ def get_shell():
 def install_pip3():
     print('\n\nStart: Install pip3 '.ljust(62,'>'))
 
-    if subprocess.run(['which', 'pip3']).returncode == 0:
+    if subprocess.call(['which', 'pip3']) == 0:
         print('Pip3 is installed for your Python!')
     else:
-        subprocess.run(['curl', 'https://bootstrap.pypa.io/get-pip.py', '-o', '/tmp/get-pip.py'])
-        subprocess.run(['python3', '/tmp/get-pip.py'])
+        subprocess.call(['curl', 'https://bootstrap.pypa.io/get-pip.py', '-o', '/tmp/get-pip.py'])
+        subprocess.call(['python3', '/tmp/get-pip.py'])
     print('Done: Install pip3 '.ljust(60,'<'))
 
 def install_homebrew():
     print('\n\nStart: Install Homebrew '.ljust(62,'>'))
-    if subprocess.run(['which', 'brew']).returncode == 0:
+    if subprocess.call(['which', 'brew']) == 0:
         print('Homebrew already installed; upgrading...')
-        subprocess.run(['brew', 'update'])
-        subprocess.run(['brew', 'upgrade'])
-        subprocess.run(['brew', 'cleanup'])
+        subprocess.call(['brew', 'update'])
+        subprocess.call(['brew', 'upgrade'])
+        subprocess.call(['brew', 'cleanup'])
     else:
         print('Installing CLT for Xcode...')
-        subprocess.run(['xcode-select', '--install'])
+        subprocess.call(['xcode-select', '--install'])
         print('Installing Homebrew...')
-        retCode = subprocess.run(['/usr/bin/ruby','e','"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
+        retCode = subprocess.call(['/usr/bin/ruby','e','"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'])
         if retCode != 0:
             print("Homebrew install failed!!")
             exit(retCode)
@@ -220,10 +220,10 @@ def install_homebrew():
 
 def install_node(version='11'):
     print('\n\nStart: Install node '.ljust(62,'>'))
-    subprocess.run(['nvm', 'install', version])
-    subprocess.run(['nvm', 'use', version])
-    subprocess.run(['nvm', 'alias', 'default', version])
-    subprocess.run(['npm', 'install', '-g', 'npm-check','mocha','npm','yarn'])
+    subprocess.call(['nvm', 'install', version])
+    subprocess.call(['nvm', 'use', version])
+    subprocess.call(['nvm', 'alias', 'default', version])
+    subprocess.call(['npm', 'install', '-g', 'npm-check','mocha','npm','yarn'])
     print('Done: Install node '.ljust(60,'<'))
 
 def brew_install_list(bin_list, mode='tap'):
@@ -238,14 +238,14 @@ def brew_install_list(bin_list, mode='tap'):
     for tool in bin_list:
         check_cmd = deepcopy(brew_cmd)
         check_cmd.extend(['list', tool])
-        if subprocess.run(check_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT).returncode != 0:
+        if subprocess.call(check_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0:
             print('Added %s to installation' % (tool))
             brew_args.append(tool)
             install_needed = True
         else: 
             print('%s is installed!' % (tool))
     if install_needed:
-        subprocess.run(brew_args)
+        subprocess.call(brew_args)
     
 def install_tools(tools_list, shell='bash'):
     print('\n\nStart: Install tools '.ljust(62,'>'))
@@ -271,15 +271,15 @@ def install_casks(cask_list):
 
 def configure_git():
     print('\n\nStart: Configure git '.ljust(62,'>'))  
-    subprocess.run(['git', 'config', '--global', 'credential.helper', 'osxkeychain'])
-    subprocess.run(['git', 'config', '--global', 'alias.push', "'push --follow-tags'"])
-    subprocess.run(['git', 'config', '--global', 'alias.st', 'status'])
-    subprocess.run(['git', 'config', '--global', 'alias.co', 'checkout'])
-    subprocess.run(['git', 'config', '--global', 'alias.br', 'branch'])
-    subprocess.run(['git', 'config', '--global', 'alias.pr', "'pull --rebase'"])
-    subprocess.run(['git', 'config', '--global', 'alias.rb', "'rebase --interactive'"])
-    subprocess.run(['git', 'config', '--global', 'alias.can', "'commit --amend --no-edit'"])
-    subprocess.run(['git', 'config', '--global', 'core.excludesfile', os.path.expanduser('~/.gitignore')])
+    subprocess.call(['git', 'config', '--global', 'credential.helper', 'osxkeychain'])
+    subprocess.call(['git', 'config', '--global', 'alias.push', "'push --follow-tags'"])
+    subprocess.call(['git', 'config', '--global', 'alias.st', 'status'])
+    subprocess.call(['git', 'config', '--global', 'alias.co', 'checkout'])
+    subprocess.call(['git', 'config', '--global', 'alias.br', 'branch'])
+    subprocess.call(['git', 'config', '--global', 'alias.pr', "'pull --rebase'"])
+    subprocess.call(['git', 'config', '--global', 'alias.rb', "'rebase --interactive'"])
+    subprocess.call(['git', 'config', '--global', 'alias.can', "'commit --amend --no-edit'"])
+    subprocess.call(['git', 'config', '--global', 'core.excludesfile', os.path.expanduser('~/.gitignore')])
     write_gitignore(os.path.expanduser('~/.gitignore'), ['.idea', '.DS_STORE', 'scratch.*'])
     print('Done: Configure git '.ljust(60,'<'))
 
