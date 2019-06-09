@@ -5,6 +5,8 @@ import subprocess
 import sys
 import time
 
+FNULL = open(os.devnull, 'w')
+
 def main():
     people = {
         'sol_arch': 'Frank Gu <frank@voiceflow.com>',
@@ -20,9 +22,9 @@ def main():
     configure_aws_user()
 
     install_pip()
-    install_homebrew()
     print('Automated install step begins. I will need a few minutes, so go grab a coffee ' + u'\u2615'+'!')
 
+    install_homebrew()
     casks = ['docker']
     if install_chrome:
         if os.path.isdir('/Applications/Google Chrome.app'):
@@ -215,12 +217,11 @@ def install_homebrew():
         subprocess.call(['xcode-select', '--install'])
         print('Installing Homebrew...')
         subprocess.call(['curl', 'https://raw.githubusercontent.com/Homebrew/install/master/install', '-o', '/tmp/install_homebrew.rb'])
-        p = Popen(['/usr/bin/ruby','/tmp/install_homebrew.rb'], stdin=PIPE, shell=True)
-        p.communicate(input='\n') # Automatically press ENTER
-       
-        if p.returncode != 0:
+        retCode = subprocess.call(['/usr/bin/ruby','/tmp/install_homebrew.rb'], stdin=FNULL)
+
+        if retCode != 0:
             print("Homebrew install failed!!")
-            exit(p.returncode)
+            exit(retCode)
     print('Done: Install Homebrew '.ljust(60,'<'))
 
 def install_node(version='11'):
@@ -243,7 +244,7 @@ def brew_install_list(bin_list, mode='tap'):
     for tool in bin_list:
         check_cmd = deepcopy(brew_cmd)
         check_cmd.extend(['list', tool])
-        FNULL = open(os.devnull, 'w')
+        
         if subprocess.call(check_cmd, stdout=FNULL, stderr=subprocess.STDOUT) != 0:
             print('Added %s to installation' % (tool))
             brew_args.append(tool)
