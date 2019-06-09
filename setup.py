@@ -215,10 +215,12 @@ def install_homebrew():
         subprocess.call(['xcode-select', '--install'])
         print('Installing Homebrew...')
         subprocess.call(['curl', 'https://raw.githubusercontent.com/Homebrew/install/master/install', '-o', '/tmp/install_homebrew.rb'])
-        retCode = subprocess.call(['/usr/bin/ruby','/tmp/install_homebrew.rb'])
-        if retCode != 0:
+        p = Popen(['/usr/bin/ruby','/tmp/install_homebrew.rb'], stdin=PIPE, shell=True)
+        p.communicate(input='\n') # Automatically press ENTER
+       
+        if p.returncode != 0:
             print("Homebrew install failed!!")
-            exit(retCode)
+            exit(p.returncode)
     print('Done: Install Homebrew '.ljust(60,'<'))
 
 def install_node(version='11'):
@@ -241,7 +243,8 @@ def brew_install_list(bin_list, mode='tap'):
     for tool in bin_list:
         check_cmd = deepcopy(brew_cmd)
         check_cmd.extend(['list', tool])
-        if subprocess.call(check_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT) != 0:
+        FNULL = open(os.devnull, 'w')
+        if subprocess.call(check_cmd, stdout=FNULL, stderr=subprocess.STDOUT) != 0:
             print('Added %s to installation' % (tool))
             brew_args.append(tool)
             install_needed = True
@@ -252,17 +255,17 @@ def brew_install_list(bin_list, mode='tap'):
     
 def install_tools(tools_list, shell='bash'):
     print('\n\nStart: Install tools '.ljust(62,'>'))
+    if shell == 'zsh':
+        tools_list.append('zsh')
+        shell_path = '~/.zshrc'
+    else:
+        shell_path = '~/.bash_profile'
+    subprocess.call(['mkdir', '-p',os.path.expanduser(shell_path)])
     brew_install_list(tools_list, mode='tap')
 
     # Add libpq binaries to PATH
     libpq_path = 'export PATH="/usr/local/opt/libpq/bin:$PATH"'
 
-    if shell == 'zsh':
-        brew_install_list(['zsh'], mode='tap')
-        shell_path = '~/.zshrc'
-    else:
-        shell_path = '~/.bash_profile'
-        
     insert_line(os.path.expanduser(shell_path), '# Postgres utilities')
     insert_line(os.path.expanduser(shell_path), libpq_path)
     print('Done: Install tools '.ljust(60,'<'))
@@ -329,11 +332,13 @@ def insert_line(file_path, line):
             existingLines = [line.rstrip('\n') for line in rof.readlines()]
 
     add_newline = False
-    with open(file_path, 'rb+') as f:
-        f.seek(-1,2)
-        lastChar = f.read()
-        if lastChar != b'\n':
-            add_newline = True
+    # Only check if a newline needs to be added for non-empty files
+    if os.stat(file_path).st_size != 0:
+        with open(file_path, 'rb+') as f:
+            f.seek(-1,2)
+            lastChar = f.read()
+            if lastChar != b'\n':
+                add_newline = True
 
     with open(file_path, 'a+') as af:
         if add_newline:
