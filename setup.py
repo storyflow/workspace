@@ -276,7 +276,8 @@ def install_casks(cask_list):
     print('Done: Install casks '.ljust(60,'<'))
 
 def configure_git():
-    print('\n\nStart: Configure git '.ljust(62,'>'))  
+    print('\n\nStart: Configure git '.ljust(62,'>'))
+    subprocess.call(['touch', os.path.expanduser('~/.gitignore')]) 
     subprocess.call(['git', 'config', '--global', 'credential.helper', 'osxkeychain'])
     subprocess.call(['git', 'config', '--global', 'alias.push', "'push --follow-tags'"])
     subprocess.call(['git', 'config', '--global', 'alias.st', 'status'])
