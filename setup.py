@@ -165,7 +165,7 @@ def clone_repositories(repo_list, workspace_dir='~/workspace/voiceflow'):
         repo_path = os.path.join(os.path.expanduser(workspace_dir), repo)
         if not os.path.isdir(repo_path):
             subprocess.call(['mkdir', '-p', repo_path])
-            subprocess.call(['git', 'clone', 'git@github.com:storyflow/'+repo+'.git',repo_path])
+            subprocess.call(['git', 'clone', 'https://github.com/storyflow/'+repo+'.git',repo_path])
         else: 
             print(repo + ' is already cloned. Remember to pull!')
     print('Done: Clone repositories '.ljust(60,'<'))
