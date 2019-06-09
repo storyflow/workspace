@@ -191,15 +191,15 @@ def get_shell():
     print("Installing for %s" % (usr_shell))
     return usr_shell
 
-def install_pip3():
-    print('\n\nStart: Install pip3 '.ljust(62,'>'))
+def install_pip():
+    print('\n\nStart: Install pip '.ljust(62,'>'))
 
     if subprocess.call(['which', 'pip3']) == 0:
-        print('Pip3 is installed for your Python!')
+        print('Pip is installed for your Python!')
     else:
         subprocess.call(['curl', 'https://bootstrap.pypa.io/get-pip.py', '-o', '/tmp/get-pip.py'])
-        subprocess.call(['python3', '/tmp/get-pip.py'])
-    print('Done: Install pip3 '.ljust(60,'<'))
+        subprocess.call(['python', '/tmp/get-pip.py'])
+    print('Done: Install pip '.ljust(60,'<'))
 
 def install_homebrew():
     print('\n\nStart: Install Homebrew '.ljust(62,'>'))
