@@ -47,6 +47,7 @@ echo "[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion"
 
 AWS_CREDS=~/.aws/credentials
 
+# Create fake aws key
 if [[ -f "$AWS_CREDS" ]]; then
     echo "$AWS_CREDS exists"
 else
