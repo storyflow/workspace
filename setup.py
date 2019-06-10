@@ -117,14 +117,19 @@ def configure_aws_user():
         f.write('region = us-east-1\n')
         f.write('output = json\n')
 
-    if os.path.isfile(os.path.expanduser(aws_credential_path)) and \
-        not query_yes_no('I found existing AWS credentials. Overwrite?', default='no'):
-        # User doesn't want to overwrite existing credentials
-        return
-    
-    # Write new credentials
-    aki = raw_input('Aceess Key ID: ')
-    sak = raw_input('Secret Access Key: ')
+    if query_yes_no('Do you need non-default AWS credentials?', default='no'):
+        if os.path.isfile(os.path.expanduser(aws_credential_path)) and \
+            not query_yes_no('I found existing AWS credentials. Overwrite?', default='no'):
+            # User doesn't want to overwrite existing credentials
+            return
+        
+        # Write new credentials
+        aki = raw_input('Aceess Key ID: ')
+        sak = raw_input('Secret Access Key: ')
+    else: 
+        aki = 'AKIAIOSFODNN7EXAMPLE'
+        sak = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+
     with open(os.path.expanduser(aws_credential_path), 'w+') as f:
         f.write('aws_access_key_id = ' + aki + '\n')
         f.write('aws_secret_access_key = ' + sak + '\n')
@@ -145,17 +150,18 @@ def configure_shell(shell='bash', install_optimizations=True):
             subprocess.call(['make', '-C', '/tmp/sexy-bash-prompt', 'install'])
     else: 
         shell_profile = '~/.zshrc'
-        subprocess.call(['touch', os.path.expanduser(shell_profile)])
-        insert_line(os.path.expanduser(shell_profile), '# NVM')
-        insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
-        insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
-        insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
+        
         if install_optimizations:
             print('Installing oh-my-zsh')
             subprocess.call(['curl','-Lo','/tmp/install.sh','https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh'])
             subprocess.call(['sh', '/tmp/install.sh', '--unattended'])
             subprocess.call(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
     
+    subprocess.call(['touch', os.path.expanduser(shell_profile)])
+    insert_line(os.path.expanduser(shell_profile), '# NVM')
+    insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
+    insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
+    insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
     insert_line(os.path.expanduser(shell_profile),'# Voiceflow environments')
     insert_line(os.path.expanduser(shell_profile),'NODE_ENV=local')
     print('\n\nDone: Configure shell '.ljust(60,'<'))
@@ -350,7 +356,7 @@ def insert_line(file_path, needle):
     with open(file_path, "r+") as file:
         for line in file:
             if needle in line:
-            break
+                break
         else: # not found, we are at the eof
             if add_newline:
                 file.write('\n')
