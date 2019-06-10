@@ -182,7 +182,7 @@ def install_nvm(shell='bash'):
     insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
     insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
     insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
-    subprocess.call(['NODE_VERSION='+NODE_VERSION, 'sh', './install_node.sh'])
+    subprocess.call(['sh', './install_node.sh'])
 
 def clone_repositories(repo_list, workspace_dir='~/workspace/voiceflow'):
     print('\n\nStart: Clone repositories '.ljust(62,'>'))
