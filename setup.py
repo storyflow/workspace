@@ -328,25 +328,31 @@ def write_gitignore(file_path, ignores):
         insert_line(file_path, line)
 
 def insert_line(file_path, line):
-    existingLines = []
-    if os.path.isfile(file_path):
-        with open(file_path, 'r') as rof:
-            existingLines = [line.rstrip('\n') for line in rof.readlines()]
+    # existingLines = []
+    # if os.path.isfile(file_path):
+    #     with open(file_path, 'r') as rof:
+    #         existingLines = [line.rstrip('\n') for line in rof.readlines()]
 
-    add_newline = False
-    # Only check if a newline needs to be added for non-empty files
-    if os.stat(file_path).st_size != 0:
-        with open(file_path, 'rb+') as f:
-            f.seek(-1,2)
-            lastChar = f.read()
-            if lastChar != b'\n':
-                add_newline = True
+    # add_newline = False
+    # # Only check if a newline needs to be added for non-empty files
+    # if os.stat(file_path).st_size != 0:
+    #     with open(file_path, 'rb+') as f:
+    #         f.seek(-1,2)
+    #         lastChar = f.read()
+    #         if lastChar != b'\n':
+    #             add_newline = True
 
-    with open(file_path, 'a+') as af:
-        if add_newline:
-            af.write('\n')
-        if line not in existingLines:
-            af.write(line + '\n')
+    # with open(file_path, 'a+') as af:
+    #     if add_newline:
+    #         af.write('\n')
+    #     if line not in existingLines:
+    #         af.write(line + '\n')
+    with open("filename", "r+") as file:
+        for line in file:
+            if needle in line:
+            break
+        else: # not found, we are at the eof
+            file.write(needle) # append missing data
 
 if __name__ == '__main__':
     main()
