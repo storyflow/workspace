@@ -7,6 +7,8 @@ import time
 
 FNULL = open(os.devnull, 'w')
 
+NODE_VERSION = "11"
+
 def main():
     people = {
         'sol_arch': 'Frank Gu <frank@voiceflow.com>',
@@ -132,6 +134,7 @@ def configure_aws_user():
         sak = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
 
     with open(os.path.expanduser(aws_credential_path), 'w+') as f:
+        f.write('[default]\n')
         f.write('aws_access_key_id = ' + aki + '\n')
         f.write('aws_secret_access_key = ' + sak + '\n')
     print('\n\nDone: Configure AWS '.ljust(60,'<'))
@@ -179,7 +182,7 @@ def install_nvm(shell='bash'):
     insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
     insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
     insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
-    subprocess.call(['sh', './install_node.sh'])
+    subprocess.call(['NODE_VERSION='+NODE_VERSION, 'sh', './install_node.sh'])
 
 def clone_repositories(repo_list, workspace_dir='~/workspace/voiceflow'):
     print('\n\nStart: Clone repositories '.ljust(62,'>'))
