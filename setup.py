@@ -49,6 +49,7 @@ def post_install(usr_shell):
     print("Installing Docker cleanup crontab")
     with open('/tmp/crontab.user', 'w+') as f:
         subprocess.call(['crontab','-l'], stdout=f)
+    subprocess.call(['open', '/Applications/Docker.app'])   # Run Docker once to complete setup
     insert_line('/tmp/crontab.user', '15 23 * * * /usr/local/bin/docker system prune -f')
     subprocess.call(['crontab', '/tmp/crontab.user'])
 
