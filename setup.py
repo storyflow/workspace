@@ -52,8 +52,6 @@ def post_install(usr_shell):
     insert_line('/tmp/crontab.user', '15 23 * * * /usr/local/bin/docker system prune -f')
     subprocess.call(['crontab', '/tmp/crontab.user'])
 
-    print('Login to NPM')
-    subprocess.call(['npm', 'login'])
     print('Done: Post install operations '.ljust(60,'<'))
 
     if usr_shell == 'zsh':
@@ -63,6 +61,7 @@ def post_install(usr_shell):
         print('    $ chsh -s $(which zsh)')
 
     print('\n\n')
+    print('Start a new shell session, and login to the company npm registry with "npm login"')
     print('You are all set to go!')
     
 def get_workspace_dir(default_dir='~/workspace/voiceflow'):
@@ -247,14 +246,6 @@ def install_homebrew():
             print("Homebrew install failed!!")
             exit(retCode)
     print('Done: Install Homebrew '.ljust(60,'<'))
-
-def install_node(version='11'):
-    print('\n\nStart: Install node '.ljust(62,'>'))
-    subprocess.call(['nvm', 'install', version])
-    subprocess.call(['nvm', 'use', version])
-    subprocess.call(['nvm', 'alias', 'default', version])
-    subprocess.call(['npm', 'install', '-g', 'npm-check','mocha','npm','yarn'])
-    print('Done: Install node '.ljust(60,'<'))
 
 def brew_install_list(bin_list, mode='tap'):
     if mode == 'cask':
