@@ -35,7 +35,8 @@ def main():
         casks.append('iterm2')
     install_casks(casks)
 
-    install_tools(['git', 'vim', 'bash-completion', 'docker-completion', 'jq', 'wget', 'libpq', 'awscli', 'nvm'], shell=usr_shell)
+    install_tools(['git', 'vim', 'bash-completion', 'docker-completion', 'jq', 'wget', 'libpq', 'awscli'], shell=usr_shell)
+    install_nvm(shell=usr_shell)
     configure_shell(usr_shell, install_shell_utils)
     configure_git()
     clone_repositories(['storyflow-creator', 'storyflow-server', 'database'], workspace_path)
@@ -158,13 +159,27 @@ def configure_shell(shell='bash', install_optimizations=True):
             subprocess.call(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
     
     subprocess.call(['touch', os.path.expanduser(shell_profile)])
+    insert_line(os.path.expanduser(shell_profile),'# Voiceflow environments')
+    insert_line(os.path.expanduser(shell_profile),'NODE_ENV=local')
+    print('\n\nDone: Configure shell '.ljust(60,'<'))
+
+def install_nvm(shell='bash'):
+    if shell == 'bash':
+        shell_profile = '~/.bash_profile'
+    else: 
+        shell_profile = '~/.zshrc'
+
+    # Install NVM
+    subprocess.call(['curl', 'https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh', '-o', '/tmp/install_nvm.sh'])
+    subprocess.call(['sh', '/tmp/install_nvm.sh'])
+
+    # Install nvm shell profile settings
+    subprocess.call(['touch', os.path.expanduser(shell_profile)])
     insert_line(os.path.expanduser(shell_profile), '# NVM')
     insert_line(os.path.expanduser(shell_profile), 'export NVM_DIR="$HOME/.nvm"')
     insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm')
     insert_line(os.path.expanduser(shell_profile), r'[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion')
-    insert_line(os.path.expanduser(shell_profile),'# Voiceflow environments')
-    insert_line(os.path.expanduser(shell_profile),'NODE_ENV=local')
-    print('\n\nDone: Configure shell '.ljust(60,'<'))
+    subprocess.call(['sh', './install_node.sh'])
 
 def clone_repositories(repo_list, workspace_dir='~/workspace/voiceflow'):
     print('\n\nStart: Clone repositories '.ljust(62,'>'))
@@ -275,6 +290,7 @@ def install_tools(tools_list, shell='bash'):
 
     insert_line(os.path.expanduser(shell_path), '# Postgres utilities')
     insert_line(os.path.expanduser(shell_path), libpq_path)
+    subprocess.call(['mkdir', '-p', os.path.expanduser('~/.nvm')])
     print('Done: Install tools '.ljust(60,'<'))
 
 def install_casks(cask_list):
@@ -334,11 +350,6 @@ def write_gitignore(file_path, ignores):
         insert_line(file_path, line)
 
 def insert_line(file_path, needle):
-    # existingLines = []
-    # if os.path.isfile(file_path):
-    #     with open(file_path, 'r') as rof:
-    #         existingLines = [line.rstrip('\n') for line in rof.readlines()]
-
     add_newline = False
     # Only check if a newline needs to be added for non-empty files
     if os.stat(file_path).st_size != 0:
@@ -348,11 +359,6 @@ def insert_line(file_path, needle):
             if lastChar != b'\n':
                 add_newline = True
 
-    # with open(file_path, 'a+') as af:
-    #     if add_newline:
-    #         af.write('\n')
-    #     if line not in existingLines:
-    #         af.write(line + '\n')
     with open(file_path, "r+") as file:
         for line in file:
             if needle in line:
