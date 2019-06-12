@@ -39,6 +39,7 @@
     "url": "git+https://github.com/storyflow/workspace.git"
   },
   "scripts": {
+    "commit": "git-cz",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }
