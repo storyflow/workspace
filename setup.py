@@ -37,7 +37,7 @@ def main():
         casks.append('iterm2')
     install_casks(casks)
 
-    install_tools(['git', 'vim', 'bash-completion', 'docker-completion', 'jq', 'wget', 'libpq', 'awscli'], shell=usr_shell)
+    install_tools(['git', 'vim', 'bash-completion', 'docker-completion', 'jq', 'wget', 'libpq', 'awscli', 'mkcert'], shell=usr_shell)
     install_nvm(shell=usr_shell)
     configure_shell(usr_shell, install_shell_utils)
     configure_git()
