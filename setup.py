@@ -64,7 +64,7 @@ def post_install(usr_shell):
     print('\n\n')
     print('Start a new shell session, and login to the company npm registry with "npm login"')
     print('You are all set to go!')
-    
+
 def get_workspace_dir(default_dir='~/workspace/voiceflow'):
     dir_valid = False
     while not dir_valid:
@@ -73,18 +73,18 @@ def get_workspace_dir(default_dir='~/workspace/voiceflow'):
             path = default_dir
         if subprocess.call(['mkdir', '-p', os.path.expanduser(path)]) != 0:
             print('I cannot put your workspace there. Please enter another path!')
-        else: 
+        else:
             return path
 
 def preinstall_check(personale_dict):
     print('Welcome to Voiceflow! I am going to set up your computer for development.')
     print('Before we begin, I will make sure you have all the information ready!\n\n')
-    
+
     # Check AWS access
-    if not query_yes_no('Did you receive AWS credentials?'):
-        print('Please speak to %s' % (personale_dict['sol_arch']))
-        if not query_yes_no('Continue?'):
-            exit(0)
+    # if not query_yes_no('Did you receive AWS credentials?'):
+    #     print('Please speak to %s' % (personale_dict['sol_arch']))
+    #     if not query_yes_no('Continue?'):
+    #         exit(0)
 
     # Check GitHub setup
     if not query_yes_no('Is your GitHub set up with 2FA'):
@@ -98,7 +98,7 @@ def preinstall_check(personale_dict):
         print('Please speak to %s' % (personale_dict['eng_lead']))
         if not query_yes_no('Continue?'):
             exit(0)
-    
+
     # Check NPM access
     if not query_yes_no('Did you receive NPM access?'):
         print('Please create an NPM account')
@@ -120,18 +120,13 @@ def configure_aws_user():
         f.write('region = us-east-1\n')
         f.write('output = json\n')
 
-    if query_yes_no('Do you need non-default AWS credentials?', default='no'):
-        if os.path.isfile(os.path.expanduser(aws_credential_path)) and \
-            not query_yes_no('I found existing AWS credentials. Overwrite?', default='no'):
-            # User doesn't want to overwrite existing credentials
-            return
-        
-        # Write new credentials
-        aki = raw_input('Aceess Key ID: ')
-        sak = raw_input('Secret Access Key: ')
-    else: 
-        aki = 'AKIAIOSFODNN7EXAMPLE'
-        sak = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
+    if os.path.isfile(os.path.expanduser(aws_credential_path)) and \
+      not query_yes_no('I found existing AWS credentials. Overwrite?', default='no'):
+      # User doesn't want to overwrite existing credentials
+      return
+
+    aki = 'AKIAIOSFODNN7EXAMPLE'
+    sak = 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY'
 
     with open(os.path.expanduser(aws_credential_path), 'w+') as f:
         f.write('[default]\n')
@@ -152,15 +147,15 @@ def configure_shell(shell='bash', install_optimizations=True):
             subprocess.call(['mkdir', '/tmp/sexy-bash-prompt'])
             subprocess.call(['git','clone','--depth','1','--config','core.autocrlf=false','https://github.com/twolfson/sexy-bash-prompt', '/tmp/sexy-bash-prompt'])
             subprocess.call(['make', '-C', '/tmp/sexy-bash-prompt', 'install'])
-    else: 
+    else:
         shell_profile = '~/.zshrc'
-        
+
         if install_optimizations:
             print('Installing oh-my-zsh')
             subprocess.call(['curl','-Lo','/tmp/install.sh','https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh'])
             subprocess.call(['sh', '/tmp/install.sh', '--unattended'])
-            subprocess.call(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])       
-    
+            subprocess.call(['sed', '-i', '', 's:^ZSH_THEME.*$:ZSH_THEME=\"bira\":g',os.path.expanduser('~/.zshrc')])
+
     subprocess.call(['touch', os.path.expanduser(shell_profile)])
     insert_line(os.path.expanduser(shell_profile),'# Voiceflow environments')
     insert_line(os.path.expanduser(shell_profile),'NODE_ENV=local')
@@ -169,7 +164,7 @@ def configure_shell(shell='bash', install_optimizations=True):
 def install_nvm(shell='bash'):
     if shell == 'bash':
         shell_profile = '~/.bash_profile'
-    else: 
+    else:
         shell_profile = '~/.zshrc'
 
     # Install NVM
@@ -192,13 +187,13 @@ def clone_repositories(repo_list, workspace_dir='~/workspace/voiceflow'):
         if not os.path.isdir(repo_path):
             subprocess.call(['mkdir', '-p', repo_path])
             subprocess.call(['git', 'clone', 'https://github.com/storyflow/'+repo+'.git',repo_path])
-        else: 
+        else:
             print(repo + ' is already cloned. Remember to pull!')
     print('Done: Clone repositories '.ljust(60,'<'))
 
 def get_shell():
     ans = True
-    while ans: 
+    while ans:
         prompt = (
         "Which shell are you using?\n"
         "1.bash (default)\n"
@@ -251,25 +246,25 @@ def install_homebrew():
 def brew_install_list(bin_list, mode='tap'):
     if mode == 'cask':
         brew_cmd = ['brew', 'cask']
-    else: 
+    else:
         brew_cmd = ['brew']
     brew_args = deepcopy(brew_cmd)
     brew_args.append('install')
-    
+
     install_needed = False
     for tool in bin_list:
         check_cmd = deepcopy(brew_cmd)
         check_cmd.extend(['list', tool])
-        
+
         if subprocess.call(check_cmd, stdout=FNULL, stderr=subprocess.STDOUT) != 0:
             print('Added %s to installation' % (tool))
             brew_args.append(tool)
             install_needed = True
-        else: 
+        else:
             print('%s is installed!' % (tool))
     if install_needed:
         subprocess.call(brew_args)
-    
+
 def install_tools(tools_list, shell='bash'):
     print('\n\nStart: Install tools '.ljust(62,'>'))
     if shell == 'zsh':
@@ -289,13 +284,13 @@ def install_tools(tools_list, shell='bash'):
     print('Done: Install tools '.ljust(60,'<'))
 
 def install_casks(cask_list):
-    print('\n\nStart: Install casks '.ljust(62,'>'))    
+    print('\n\nStart: Install casks '.ljust(62,'>'))
     brew_install_list(cask_list, mode='cask')
     print('Done: Install casks '.ljust(60,'<'))
 
 def configure_git():
     print('\n\nStart: Configure git '.ljust(62,'>'))
-    subprocess.call(['touch', os.path.expanduser('~/.gitignore')]) 
+    subprocess.call(['touch', os.path.expanduser('~/.gitignore')])
     subprocess.call(['git', 'config', '--global', 'credential.helper', 'osxkeychain'])
     subprocess.call(['git', 'config', '--global', 'alias.push', "'push --follow-tags'"])
     subprocess.call(['git', 'config', '--global', 'alias.st', 'status'])
@@ -340,7 +335,7 @@ def query_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
 
-def write_gitignore(file_path, ignores):  
+def write_gitignore(file_path, ignores):
     for line in ignores:
         insert_line(file_path, line)
 
